@@ -1,0 +1,8 @@
+*.pyc
+*.pyo
+*.swp
+build/
+setuptools*
+*.egg-info/
+*EGG-INGO*
+dist/

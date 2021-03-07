@@ -1,0 +1,361 @@
+name: ZenPacks.baileytj.BIND9
+
+class_relationships:
+  - Products.ZenModel.Device.Device(bind9Daemon) 1:MC BIND9DaemonBase(bind9Server)
+  - BIND9DaemonBase(bind9Views) 1:MC BIND9ViewBase(bind9Daemon)
+
+classes:
+
+  # Base Classes
+  BIND9DaemonBase:
+    base: [zenpacklib.Component]
+    order: 15
+    properties:
+      version:
+        label: Version
+
+  BIND9ViewBase:
+    base: [zenpacklib.Component]
+    order: 16
+
+  # Classes for RNDC method
+  BIND9DaemonRNDC:
+    base: [BIND9DaemonBase]
+    label: BIND9 Daemon RNDC
+    plural_label: BIND9 Daemon RNDC
+    short_label: BINDURL
+    plural_short_label: BIND9 Daemon RNDC
+
+  BIND9ViewRNDC:
+    base: [BIND9ViewBase]
+    label: BIND9 View RNDC
+    plural_label: BIND9 Views RNDC
+    short_label: BIND9 View RNDC
+    plural_short_label: BIND9 Views RNDC
+
+  # Classes for URL method
+  BIND9DaemonURL:
+    base: [BIND9DaemonBase]
+    label: BIND9 Daemon URL
+    plural_label: BIND9 Daemon URL
+    short_label: BIND9 Daemon URL
+    plural_short_label: BIND9 Daemon URL
+
+  BIND9ViewURL:
+    base: [BIND9ViewBase]
+    label: BIND9 View URL
+
+zProperties:
+  DEFAULTS:
+    category: BIND9
+  zBIND9IgnoreViews:
+    type: string
+    default: _bind
+    description: Regex of BIND views to ignore
+  zBIND9RNDCBinaryPath:
+    type: string
+    default: /usr/sbin/rndc
+    description: Path to the rndc executable
+  zBIND9RNDCExecPrefix:
+    type: string
+    default: /usr/bin/sudo
+    description: Command to run prior to rndc
+  zBIND9RNDCStatsPath:
+    type: string
+    default: /var/cache/bind/named.stats
+    description: Path to the rndc stats file
+  zBIND9URLHostname:
+    type: string
+    description: Override the device id for accessing the BIND stats URL
+  zBIND9URLPath:
+    type: string
+    default: /xml/v3/server
+    description: Path to use to access the BIND stats URL
+  zBIND9URLPort:
+    type: int
+    default: 8080
+    description: Port to use to access the BIND stats URL
+  zBIND9URLUseSSL:
+    type: boolean
+    default: False
+    description: Use https if True, http otherwise.
+      
+device_classes:
+  /:
+    remove: false
+    templates:
+      BIND9DaemonRNDC:
+        targetPythonClass: ZenPacks.baileytj.BIND9.BIND9DaemonRNDC
+        datasources:
+          queries:
+            type: COMMAND
+            commandTemplate: >-
+              /bin/echo > /dev/null;
+              ${here/zBIND9RNDCExecPrefix} ${here/zBIND9RNDCBinaryPath} stats;
+              tac ${here/zBIND9RNDCStatsPath} | awk '!f; /\+\+\+/{f=1};' | tac;
+            component: "${here/id}"
+            cycletime: 300
+            parser: ZenPacks.baileytj.BIND9.parsers.cmd.daemon
+            usessh: true
+            datapoints:
+              DEFAULTS:
+                rrdmin: 0
+              opcode-query: DERIVE
+              qtype-a: DERIVE
+              qtype-aaaa: DERIVE
+              qtype-cname: DERIVE
+              qtype-mx: DERIVE
+              qtype-ns: DERIVE
+              qtype-ptr: DERIVE
+              qtype-soa: DERIVE
+              qtype-srv: DERIVE
+              qtype-txt: DERIVE
+              rcode-noerror: DERIVE
+              rcode-nxdomain: DERIVE
+              rcode-refused: DERIVE
+              rcode-servfail: DERIVE
+
+        graphs:
+          DEFAULTS:
+            miny: 0
+            units: queries/sec
+          Incoming Requests:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              Total:
+                dpName: queries_opcode-query
+          Incoming Queries:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              A:
+                dpName: queries_qtype-a
+              AAAA:
+                dpName: queries_qtype-aaaa
+              CNAME:
+                dpName: queries_qtype-cname
+              MX:
+                dpName: queries_qtype-mx
+              NS:
+                dpName: queries_qtype-ns
+              PTR:
+                dpName: queries_qtype-ptr
+              SOA:
+                dpName: queries_qtype-soa
+              SRV:
+                dpName: queries_qtype-srv
+              TXT:
+                dpName: queries_qtype-txt
+
+          Outgoing Rcodes:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              NOERROR:
+                dpName: queries_rcode-noerror
+              NXDOMAIN:
+                dpName: queries_rcode-nxdomain
+              REFUSED:
+                dpName: queries_rcode-refused
+              SERVFAIL:
+                dpName: queries_rcode-servfail
+
+      BIND9ViewRNDC:
+        targetPythonClass: ZenPacks.baileytj.BIND9.BIND9ViewRNDC
+        datasources:
+          queries:
+            type: COMMAND
+            commandTemplate: >-
+              /bin/echo > /dev/null;
+              ${here/zBIND9RNDCExecPrefix} ${here/zBIND9RNDCBinaryPath} stats;
+              tac ${here/zBIND9RNDCStatsPath} | awk '!f; /\+\+\+/{f=1};' | tac;
+            component: "${here/id}"
+            cycletime: 300
+            parser: ZenPacks.baileytj.BIND9.parsers.cmd.view
+            usessh: true
+            datapoints:
+              DEFAULTS:
+                rrdmin: 0
+              resqtype-a: DERIVE
+              resqtype-aaaa: DERIVE
+              resqtype-cname: DERIVE
+              resqtype-mx: DERIVE
+              resqtype-ns: DERIVE
+              resqtype-ptr: DERIVE
+              resqtype-soa: DERIVE
+              resqtype-srv: DERIVE
+              resqtype-txt: DERIVE
+              cachestats-cachehits: DERIVE
+              cachestats-cachemisses: DERIVE
+              cachestats-cachedatabasenodes: GAUGE
+              
+        graphs:
+          DEFAULTS:
+            miny: 0
+            units: queries/sec
+          Outgoing Queries:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              A:
+                dpName: queries_resqtype-a
+              AAAA:
+                dpName: queries_resqtype-aaaa
+              CNAME:
+                dpName: queries_resqtype-cname
+              MX:
+                dpName: queries_resqtype-mx
+              NS:
+                dpName: queries_resqtype-ns
+              PTR:
+                dpName: queries_resqtype-ptr
+              SOA:
+                dpName: queries_resqtype-soa
+              SRV:
+                dpName: queries_resqtype-srv
+              TXT:
+                dpName: queries_resqtype-txt
+
+          Cache:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              Hits:
+                dpName: queries_cachestats-cachehits
+              Misses:
+                dpName: queries_cachestats-cachemisses
+              Total Nodes:
+                dpName: queries_cachestats-cachedatabasenodes
+
+      BIND9DaemonURL:
+        targetPythonClass: ZenPacks.baileytj.BIND9.BIND9DaemonURL
+        datasources:
+          queries:
+            type: Python
+            plugin_classname: ZenPacks.baileytj.BIND9.dsplugins.URL.URL
+            cycletime: 300
+            datapoints:
+              DEFAULTS:
+                rrdmin: 0
+              opcode-query: DERIVE
+              qtype-a: DERIVE
+              qtype-aaaa: DERIVE
+              qtype-cname: DERIVE
+              qtype-mx: DERIVE
+              qtype-ns: DERIVE
+              qtype-ptr: DERIVE
+              qtype-soa: DERIVE
+              qtype-srv: DERIVE
+              qtype-txt: DERIVE
+              rcode-noerror: DERIVE
+              rcode-nxdomain: DERIVE
+              rcode-refused: DERIVE
+              rcode-servfail: DERIVE
+
+        graphs:
+          DEFAULTS:
+            miny: 0
+            units: queries/sec
+          Incoming Requests:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              Total:
+                dpName: queries_opcode-query
+          Incoming Queries:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              A:
+                dpName: queries_qtype-a
+              AAAA:
+                dpName: queries_qtype-aaaa
+              CNAME:
+                dpName: queries_qtype-cname
+              MX:
+                dpName: queries_qtype-mx
+              NS:
+                dpName: queries_qtype-ns
+              PTR:
+                dpName: queries_qtype-ptr
+              SOA:
+                dpName: queries_qtype-soa
+              SRV:
+                dpName: queries_qtype-srv
+              TXT:
+                dpName: queries_qtype-txt
+
+          Outgoing Rcodes:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              NOERROR:
+                dpName: queries_rcode-noerror
+              NXDOMAIN:
+                dpName: queries_rcode-nxdomain
+              REFUSED:
+                dpName: queries_rcode-refused
+              SERVFAIL:
+                dpName: queries_rcode-servfail
+
+      BIND9ViewURL:
+        targetPythonClass: ZenPacks.baileytj.BIND9.BIND9ViewURL
+        datasources:
+          queries:
+            type: Python
+            plugin_classname: ZenPacks.baileytj.BIND9.dsplugins.URL.URL
+            cycletime: 300
+            datapoints:
+              DEFAULTS:
+                rrdmin: 0
+              resqtype-a: DERIVE
+              resqtype-aaaa: DERIVE
+              resqtype-cname: DERIVE
+              resqtype-mx: DERIVE
+              resqtype-ns: DERIVE
+              resqtype-ptr: DERIVE
+              resqtype-soa: DERIVE
+              resqtype-srv: DERIVE
+              resqtype-txt: DERIVE
+              cachestats-cachehits: DERIVE
+              cachestats-cachemisses: DERIVE
+              cachestats-cachenodes: GAUGE
+
+        graphs:
+          DEFAULTS:
+            miny: 0
+            units: queries/sec
+          Outgoing Queries:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              A:
+                dpName: queries_resqtype-a
+              AAAA:
+                dpName: queries_resqtype-aaaa
+              CNAME:
+                dpName: queries_resqtype-cname
+              MX:
+                dpName: queries_resqtype-mx
+              NS:
+                dpName: queries_resqtype-ns
+              PTR:
+                dpName: queries_resqtype-ptr
+              SOA:
+                dpName: queries_resqtype-soa
+              SRV:
+                dpName: queries_resqtype-srv
+              TXT:
+                dpName: queries_resqtype-txt
+
+          Cache:
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+              Hits:
+                dpName: queries_cachestats-cachehits
+              Misses:
+                dpName: queries_cachestats-cachemisses
+              Total Nodes:
+                dpName: queries_cachestats-cachenodes

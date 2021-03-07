@@ -1,0 +1,58 @@
+name: Create release on version tag
+
+on:
+  push:
+    tags:
+      - 'v\d\.\d\.\d'
+
+jobs:
+  build-and-release:
+    name: Create python distribution for release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python 2.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 2.7.18
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create Egg
+        id: create_egg
+        run: |
+          python setup.py bdist_egg
+          egg=$(ls dist/)
+          echo "::set-output name=egg::$egg"
+      - name: Extract release notes
+        id: release_notes
+        uses: ffurrer2/extract-release-notes@v1
+      - name: Determine Release Type
+        id: release_type
+        run: |
+          tag=$(echo ${{ github.ref }} | cut -d/ -f3)
+          if [[ ${tag} =~ ^v0\. ]]; then
+            prerelease="true"
+          else
+            prerelease="false"
+          fi
+          echo "::set-output name=prerelease::$prerelease"
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: ${{ steps.release_type.outputs.prerelease }}
+          body: ${{ steps.release_notes.outputs.release_notes }}
+      - name: Upload Assets
+        id: upload_asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/${{ steps.create_egg.outputs.egg }}
+          asset_name: ${{ steps.create_egg.outputs.egg }}
+          asset_content_type: application/zip
