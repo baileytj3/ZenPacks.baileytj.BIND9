@@ -1,6 +1,6 @@
 # ZenPacks.baileytj.BIND9
 
-[![GitHub Release](https://img.shields.io/github/v/release/baileytj3/ZenPacks.baileytj.BIND9?include_prereleases)] (https://github.com/baileytj3/ZenPacks.baileytj.BIND9/releases/latest)
+[![GitHub Release](https://img.shields.io/github/v/release/baileytj3/ZenPacks.baileytj.BIND9?include_prereleases)](https://github.com/baileytj3/ZenPacks.baileytj.BIND9/releases/latest)
 
 ZenPack to monitor a BIND9 daemon
 
