@@ -34,6 +34,15 @@ ZenPack to monitor a BIND9 daemon
   * Use https if True, http otherwise.
   * Default: False
 
+## Processes
+
+### Organizer
+* `DNS`
+
+### Class
+* `bind`
+  * Matches processes for `named`
+
 ## Usage
 
 This ZenPack comes with two different ways to monitor BIND9. The first is by

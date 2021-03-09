@@ -359,3 +359,12 @@ device_classes:
                 dpName: queries_cachestats-cachemisses
               Total Nodes:
                 dpName: queries_cachestats-cachenodes
+
+process_class_organizers:
+  /DNS:
+    zProperties:
+      zModelerLock: 1
+    process_classes:
+      bind:
+        includeRegex: 'named'
+        excludeRegex: '\b(vim|tail|grep|tar|cat|bash)\b'
