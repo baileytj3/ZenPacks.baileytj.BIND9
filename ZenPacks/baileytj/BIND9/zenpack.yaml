@@ -77,9 +77,9 @@ zProperties:
     description: Port to use to access the BIND stats URL
   zBIND9URLUseSSL:
     type: boolean
-    default: False
+    default: false
     description: Use https if True, http otherwise.
-      
+
 device_classes:
   /:
     remove: false
@@ -189,7 +189,7 @@ device_classes:
               cachestats-cachehits: DERIVE
               cachestats-cachemisses: DERIVE
               cachestats-cachedatabasenodes: GAUGE
-              
+
         graphs:
           DEFAULTS:
             miny: 0
