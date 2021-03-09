@@ -77,9 +77,9 @@ to the device or device class.
 
 ### Statistics Channel
 
-BIND9 also supports XML monitoring via the statistics-channel. Zenoss only
-needs to be able to query the URL for BIND9 once the statistics-channel is
-configured.
+BIND9 also supports XML monitoring via
+[statistics-channels](https://kb.isc.org/docs/aa-00769). Zenoss only needs to be
+able to query the URL for BIND9 once the statistics-channel is configured.
 
 To monitor BIND9 via the statistics-channel, bind the `baileytj.python.BIND9`
 modeler to the device or device class.
