@@ -90,7 +90,7 @@ device_classes:
           queries:
             type: COMMAND
             commandTemplate: >-
-              /bin/echo > /dev/null;
+              $$ZENOTHING
               ${here/zBIND9RNDCExecPrefix} ${here/zBIND9RNDCBinaryPath} stats;
               tac ${here/zBIND9RNDCStatsPath} | awk '!f; /\+\+\+/{f=1};' | tac;
             component: "${here/id}"
@@ -167,7 +167,7 @@ device_classes:
           queries:
             type: COMMAND
             commandTemplate: >-
-              /bin/echo > /dev/null;
+              $$ZENOTHING
               ${here/zBIND9RNDCExecPrefix} ${here/zBIND9RNDCBinaryPath} stats;
               tac ${here/zBIND9RNDCStatsPath} | awk '!f; /\+\+\+/{f=1};' | tac;
             component: "${here/id}"
